@@ -296,6 +296,64 @@
             animation: feedbackPulse 1s ease-in-out;
         }
 
+        .back-btn {
+            padding: 20px 35px;
+            border: 3px solid #FFD700;
+            border-radius: 22px;
+            font-size: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            background: rgba(255,255,255,0.1);
+            color: #e3f2fd;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            backdrop-filter: blur(8px);
+            transform-style: preserve-3d;
+            margin-top: 20px;
+            width: 100%;
+        }
+
+        .back-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,215,0,0.6), transparent);
+            transition: left 0.8s;
+            z-index: 1;
+        }
+
+        .back-btn::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, rgba(255,215,0,0.2), transparent);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .back-btn:hover {
+            background: rgba(255,215,0,0.25);
+            transform: translateX(15px) scale(1.08) translateZ(10px);
+            color: #FFD700;
+            box-shadow: 0 12px 30px rgba(255,215,0,0.4);
+        }
+
+        .back-btn:hover::before {
+            left: 100%;
+        }
+
+        .back-btn:hover::after {
+            opacity: 1;
+        }
+
         @keyframes feedbackPulse {
             0% { transform: scale(1); }
             50% { transform: scale(1.25); }
@@ -473,6 +531,7 @@
             <p id="questionText"></p>
             <div class="modal-buttons" id="answerButtons"></div>
             <div class="modal-feedback" id="feedback"></div>
+            <button class="back-btn" onclick="closeQuestionModal()">Назад</button>
         </div>
     </div>
 
@@ -1171,6 +1230,13 @@
                 card.classList.add('incorrect-glow');
             }
             
+            // Убираем визуальные эффекты с карточки сразу после ответа
+            setTimeout(() => {
+                if(card) {
+                    card.classList.remove('correct-glow', 'incorrect-glow');
+                }
+            }, 1000); // Через 1 секунду убираем эффекты
+            
             // Если активирован режим волшебной скорости, уменьшаем время до закрытия модального окна
             const closeTime = magicSpeedMode ? 1500 : 3000;
             
@@ -1178,6 +1244,17 @@
             setTimeout(() => {
                 document.getElementById('questionModal').classList.remove('active');
             }, closeTime);
+        }
+        
+        // Функция для закрытия модального окна с вопросами
+        function closeQuestionModal() {
+            document.getElementById('questionModal').classList.remove('active');
+            
+            // Сбрасываем все визуальные эффекты с карточек
+            const cards = document.querySelectorAll('.card');
+            cards.forEach(card => {
+                card.classList.remove('correct-glow', 'incorrect-glow');
+            });
         }
 
         // Создаем волшебный падающий снег
@@ -1268,6 +1345,7 @@
             // Меняем стиль карточек для визуального эффекта
             const cards = document.querySelectorAll('.card');
             cards.forEach(card => {
+                // Убираем предыдущую анимацию, если она есть
                 card.style.animation = 'speedGlow 0.5s infinite alternate';
             });
             
@@ -1312,7 +1390,12 @@
                 // Выбираем случайную карточку и "нажимаем" на нее
                 const cards = document.querySelectorAll('.card');
                 const randomCard = cards[Math.floor(Math.random() * cards.length)];
-                randomCard.click();
+                
+                // Получаем индекс карточки из data-атрибута
+                const cardIndex = parseInt(randomCard.dataset.index);
+                
+                // Вызываем функцию showQuestion с правильным индексом
+                showQuestion(cardIndex);
             }, 2000);
         }
 
